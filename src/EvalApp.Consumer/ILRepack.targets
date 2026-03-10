@@ -1,0 +1,28 @@
+<Project>
+  <!--
+    Merge EvalApp.dll + EvalApp.Licensing.dll into EvalApp.Consumer.dll.
+    The csproj compiles to EvalApp.Consumer.Core.dll (intermediate).
+    This target produces the final self-contained EvalApp.Consumer.dll.
+
+    Internalize=false: merged types remain public so NavPathfinder.Sdk can
+    reference EvalApp types from this single canonical assembly. This avoids
+    type-identity conflicts from double-merging EvalApp into multiple DLLs.
+    Licensing is enforced by the Consumer facade entry point, not by hiding types.
+  -->
+  <Target Name="ILRepackEvalAppConsumer" AfterTargets="Build"
+          Inputs="$(TargetDir)EvalApp.Consumer.Core.dll;$(TargetDir)EvalApp.dll;$(TargetDir)EvalApp.Licensing.dll"
+          Outputs="$(TargetDir)EvalApp.Consumer.dll">
+    <ItemGroup>
+      <RepackInputs Include="$(TargetDir)EvalApp.Consumer.Core.dll" />
+      <RepackInputs Include="$(TargetDir)EvalApp.dll" />
+      <RepackInputs Include="$(TargetDir)EvalApp.Licensing.dll" />
+    </ItemGroup>
+    <ILRepack
+      Parallel="true"
+      Internalize="true"
+      InputAssemblies="@(RepackInputs)"
+      LibraryPath="$(TargetDir)"
+      OutputFile="$(TargetDir)EvalApp.Consumer.dll"
+      TargetKind="Dll" />
+  </Target>
+</Project>
